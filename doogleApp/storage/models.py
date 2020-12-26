@@ -42,15 +42,15 @@ class ChatHistory:
         self.clean()
         self.cur.execute(f"""
         INSERT INTO {self.__class__.__name__}
-        (DISCORD_MEMBER_ID,SEARCH_DATA)
-        VALUES ('{self.discord_member_id}','{self.search_data}');
+        (DISCORD_MEMBER_ID,SEARCH_DATA,document_vectors)
+        VALUES ('{self.discord_member_id}','{self.search_data}',to_tsvector('{self.search_data}'));
         """)
         con.commit()
 
     def filter(self, text, fields=("SEARCH_DATA", ), limit=5):
         """
         Retrieve data from database
-        :param text: (String) text to b searched
+        :param text: (String) text to be searched
         :param fields: fields to be retrieved
         :param limit: LIMIT query
         :return: search data
@@ -58,6 +58,23 @@ class ChatHistory:
         self.cur.execute(f"""
         SELECT {",".join(fields)} FROM ChatHistory
         WHERE DISCORD_MEMBER_ID='{self.discord_member_id}' AND SEARCH_DATA LIKE '%{text}%'
-        LIMIT {limit}
+        ORDER BY CREATED_AT DESC
+        LIMIT {limit};
+        """)
+        return self.cur.fetchall()
+
+    def quick_filter(self, text, fields=("SEARCH_DATA", ), limit=5):
+        """
+        Retrieve data using vector search
+        :param text: (String) text to be searched
+        :param fields: fields to be retrieved
+        :param limit: LIMIT query
+        :return: search data
+        """
+        self.cur.execute(f"""
+        SELECT {",".join(fields)} FROM ChatHistory
+        WHERE DISCORD_MEMBER_ID='{self.discord_member_id}' AND document_vectors @@ to_tsquery('{text}')
+        ORDER BY CREATED_AT DESC
+        LIMIT {limit};
         """)
         return self.cur.fetchall()
