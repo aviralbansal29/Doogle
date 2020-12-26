@@ -6,7 +6,7 @@ con = psycopg2.connect(
     user=os.getenv("USERNAME"),
     password=os.getenv("PASSWORD"),
     host=os.getenv("HOSTNAME"),
-    port=os.getenv("PORT")
+    port=os.getenv("DB_PORT")
 )
 
 
