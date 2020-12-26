@@ -14,8 +14,8 @@ def validate_command(message, supported_flags):
     content_length = len(message.content)
     if content_length < 4:
         return "Content length should be more than 3."
-    elif content_length > 20:
-        return "Please enter content length less or equal to than 20."
+    elif content_length > 100:
+        return "Please enter content length less or equal to than 100."
 
     # Validate flags
     unknown_flags = set(message.flags.keys()) - set(supported_flags)
