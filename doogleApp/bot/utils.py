@@ -1,3 +1,5 @@
+import psycopg2
+
 from googlesearch import search
 
 from storage import models as storage_models
@@ -65,7 +67,19 @@ def get_recent_search_history(message):
     chat, params = storage_models.ChatHistory(discord_member_id=message.author_id), {
         "text": message.content, "limit": limit
     }
-    # If flag is 'quick_search', execute vector search, else normal search
-    search_list = chat.quick_filter(**params) if message.flags.get("quick_search") else chat.filter(**params)
+    # try-catch: If syntax is incorrect, rollback the command
+    try:
+        # If flag is 'quick_search', execute vector search, else normal search
+        if message.flags.get("quick_search"):
+            # If multiple words are present, convert "word1 word2" to "word1 & word2" for vector search
+            params["text"] = params["text"].replace(" ", " & ")
+            search_list = chat.quick_filter(**params)
+        else:
+            search_list = chat.filter(**params)
+    except psycopg2.errors.SyntaxError:
+        chat.cur.execute("rollback;")
+        storage_models.con.commit()
+        search_list = []
+
     print(f"{len(search_list)} results found.")
     return ", ".join(result[0].strip() for result in search_list) if search_list else "No data found."
