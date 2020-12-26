@@ -34,5 +34,3 @@
     Whether to fetch data using vector search (is not accurate)
     1. *Default* :
         > Default is False for normal search.
-    2. *Validate* :
-        > Min is 1 and Max is 10.
