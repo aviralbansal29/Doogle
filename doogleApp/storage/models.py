@@ -10,6 +10,9 @@ con = psycopg2.connect(
 )
 
 
+(HI_COMMAND, SEARCH_COMMAND, HISTORY_COMMAND, UNKNOWN_COMMAND) = range(4)
+
+
 class ChatHistory:
 
     def __init__(self, discord_member_id, search_data=None):
@@ -78,3 +81,9 @@ class ChatHistory:
         LIMIT {limit};
         """)
         return self.cur.fetchall()
+
+
+class Message:
+
+    author_id, content, flags, command_type = "", "", {}, UNKNOWN_COMMAND
+
